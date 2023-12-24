@@ -10,101 +10,57 @@ if (args.Length != 1)
 var sw = new Stopwatch();
 sw.Start();
 
-// Part1();
-Part2();
+// var result = Part1();
+var result = Part2();
 
 sw.Stop();
-Console.WriteLine($"Elapsed: {sw.Elapsed.TotalMilliseconds}ms");
+Console.WriteLine($"Result: {result}; Elapsed: {sw.Elapsed.TotalMilliseconds}ms");
 return;
 
-void Part2()
+int Part2()
 {
-    var mappings = new Dictionary<string, char>
-    {
-        { "one", '1' },
-        { "eno", '1' },
-
-        { "two", '2' },
-        { "owt", '2' },
-
-        { "three", '3' },
-        { "eerht", '3' },
-
-        { "four", '4' },
-        { "ruof", '4' },
-
-        { "five", '5' },
-        { "evif", '5' },
-
-        { "six", '6' },
-        { "xis", '6' },
-
-        { "seven", '7' },
-        { "neves", '7' },
-
-        { "eight", '8' },
-        { "thgie", '8' },
-
-        { "nine", '9' },
-        { "enin", '9' },
-    };
-
-    var longestKeyLength = mappings.Max(pair => pair.Key.Length);
-    var sb = new StringBuilder(longestKeyLength);
-    var d1 = '\0';
-    var d2 = '\0';
+    var numbers = new[] { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
     var sum = 0;
 
-    foreach (ReadOnlySpan<char> line in File.ReadAllLines(args[0]))
+    foreach (var line in File.ReadAllLines(args[0]))
     {
+        var d1 = '\0';
+        var d2 = '\0';
+
         for (var i = 0; i < line.Length; i++)
         {
-            sb.Length = 0;
-            for (var j = i; j < line.Length; j++)
+            var span = line.AsSpan(i, line.Length - i);
+            if (char.IsDigit(span[0]))
             {
-                if (sb.Length == longestKeyLength)
-                {
-                    break;
-                }
+                d1 = span[0];
+                goto FROM_END;
+            }
 
-                var c = line[j];
-                if (sb.Length == 0 && char.IsDigit(c))
+            for (var j = 0; j < numbers.Length; j++)
+            {
+                if (span.StartsWith(numbers[j]))
                 {
-                    d1 = c;
-                    goto FROM_END;
-                }
-
-                sb.Append(c);
-                if (mappings.TryGetValue(sb.ToString(), out var value))
-                {
-                    d1 = value;
+                    d1 = (char)(j + 1 + '0');
                     goto FROM_END;
                 }
             }
         }
 
         FROM_END:
-        for (var i = line.Length - 1; i > -1; i--)
+        for (var i = 0; i < line.Length; i++)
         {
-            sb.Length = 0;
-            for (var j = i; j > -1; j--)
+            var span = line.AsSpan(0, line.Length - i);
+            if (char.IsDigit(span[^1]))
             {
-                if (sb.Length == longestKeyLength)
-                {
-                    break;
-                }
+                d2 = span[^1];
+                goto END;
+            }
 
-                var c = line[j];
-                if (sb.Length == 0 && char.IsDigit(c))
+            for (var j = 0; j < numbers.Length; j++)
+            {
+                if (span.EndsWith(numbers[j]))
                 {
-                    d2 = c;
-                    goto END;
-                }
-
-                sb.Append(c);
-                if (mappings.TryGetValue(sb.ToString(), out var value))
-                {
-                    d2 = value;
+                    d2 = (char)(j + 1 + '0');
                     goto END;
                 }
             }
@@ -114,10 +70,10 @@ void Part2()
         sum += (d1 - '0') * 10 + (d2 - '0');
     }
 
-    Console.WriteLine(sum);
+    return sum;
 }
 
-void Part1()
+int Part1()
 {
     var sum = 0;
     var sb = new StringBuilder();
@@ -148,5 +104,5 @@ void Part1()
         sb.Length = 0;
     }
 
-    Console.WriteLine(sum);
+    return sum;
 }
